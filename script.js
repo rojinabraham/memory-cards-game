@@ -17,24 +17,30 @@ let currentActiveCard = 0;
 const cardsEl = [];
 
 //store card data
-const cardsData = [
-  {
-    question: "What must a variable begin with?",
-    answer: "A letter, $ or _",
-  },
-  {
-    question: "What is a variable?",
-    answer: "Container for a piece of data",
-  },
-  {
-    question: "Example of Case Sensitive Variable",
-    answer: "thisIsAVariable",
-  },
-];
+
+const cardsData = getCardsData();
+
+// const cardsData = [
+//   {
+//     question: "What must a variable begin with?",
+//     answer: "A letter, $ or _",
+//   },
+//   {
+//     question: "What is a variable?",
+//     answer: "Container for a piece of data",
+//   },
+//   {
+//     question: "Example of Case Sensitive Variable",
+//     answer: "thisIsAVariable",
+//   },
+// ];
 
 //create all cards
 function createCards() {
-  cardsData.forEach((data, index) => createCard(data, index));
+  cardsData.forEach((data, index) => {
+    console.log(data);
+    createCard(data, index);
+  });
 }
 
 //create a single card in the DOM
@@ -64,10 +70,62 @@ function createCard(data, index) {
 
   updateCurrentText();
 }
+function setCardsData(data) {
+  // for(let a of data)
+  localStorage.setItem("cards", JSON.stringify(data));
+  window.location.reload();
+}
 
 //show num of cards
 function updateCurrentText() {
   currentEl.innerText = `${currentActiveCard + 1}/${cardsEl.length}`;
 }
-
+function getCardsData() {
+  const cards = JSON.parse(localStorage.getItem("cards"));
+  return cards === null ? [] : cards;
+}
 createCards();
+
+//move next
+nextBtn.addEventListener("click", () => {
+  cardsEl[currentActiveCard].className = "card left";
+  currentActiveCard = currentActiveCard + 1;
+  if (currentActiveCard > cardsEl.length - 1) {
+    currentActiveCard = cardsEl.length - 1;
+  }
+  cardsEl[currentActiveCard].className = "card active";
+  updateCurrentText();
+});
+prevBtn.addEventListener("click", () => {
+  cardsEl[currentActiveCard].className = "card right";
+  currentActiveCard = currentActiveCard - 1;
+  if (currentActiveCard < 0) {
+    currentActiveCard = 0;
+  }
+  cardsEl[currentActiveCard].className = "card active";
+  updateCurrentText();
+});
+
+showBtn.addEventListener("click", () => addContainer.classList.add("show"));
+hideBtn.addEventListener("click", () => addContainer.classList.remove("show"));
+addCardBtn.addEventListener("click", () => {
+  const question = questionEl.value;
+  const answer = answerEl.value;
+  if (question.trim() && answer.trim()) {
+    const newCard = {
+      question,
+      answer,
+    };
+    createCards(newCard);
+    questionEl.value = "";
+    answerEl.value = "";
+    addContainer.classList.remove("show");
+    cardsData.push(newCard);
+    setCardsData(cardsData);
+  }
+});
+clearBtn.addEventListener("click", () => {
+  localStorage.clear();
+  cardsContainer.innerHTML = "";
+  window.location.reload();
+});
